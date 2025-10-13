@@ -7,8 +7,8 @@ from typing import List
 import re
 import pandas as pd
 from tqdm import tqdm
-import time # API 요청 간 딜레이를 위함
 import concurrent.futures
+from dotenv import load_dotenv
 
 class LlmAugmentation():
     def __init__(
@@ -16,10 +16,11 @@ class LlmAugmentation():
             temperature: float = 1.0,
             candidate_count: int = 1
     ):
-
-        genai.configure(api_key="Input your key") # API 키 입력
+        load_dotenv()
+        KEY = os.environ.get("API_KEY")
+        genai.configure(api_key=KEY) # API 키 입력
         self.model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash",
+            model_name="gemini-2.5-flash-lite",
             #system_instruction="당신은 뛰어난 언어 능력을 가진 문장가입니다."
             system_instruction = "당신은 네이버 쇼핑 리뷰 데이터를 증강하는 최고의 전문가입니다."
         )
@@ -49,12 +50,12 @@ class LlmAugmentation():
             - 반드시 입력 문장과 동일한 별점을 유지해야 합니다.
             - 숫자, 브랜드명, 고유명사(지명, 기관명, 인명 등)는 절대 바꾸지 마세요.
             - 결과물은 원래 문장과 내용 및 구조가 달라야 합니다. 다양한 상황을 가정하여 새로운 맥락을 부여하세요.
-            - 결과는 다른 설명 없이, 오직 JSON 형식의 문자열 리스트로만 반환하세요.
+            - 결과는 다른 설명 없이, 오직 JSON 형식의 문자열 리스트로만 반환하세요.(매우 중요)
             - 출력 문장에는 (4점)과 같은 레이블을 표시하지 마세요.
             별점별 톤 가이드:
             - 1점(강한 불만): 제품의 치명적인 결함, 배송 문제, 잘못된 설명 등 구체적인 최악의 경험을 추가하여 문장을 만드세요.
             - 2점(약한 불만): 기대치에 미치지 못하는 성능, 사소한 불편함, 아쉬운 마감 처리 등을 언급하며 문장을 만드세요.
-            - 4점(대체로 만족): 핵심 기능에 대한 칭찬과 함께, '향, 포장, 배송, 특정 부가기능' 등 사소한 아쉬움을 하나 섞어서 문장을 만드세요.
+            - 4점(대체로 만족): 핵심 기능에 대한 칭찬과 함께 사소한 아쉬움을 하나 섞어서 문장을 만드세요.
             - 5점(매우 만족): 제품을 사용하며 얻은 긍정적인 결과나 삶의 변화, 재구매 의사, 주변인에게 추천하는 내용 등을 추가하여 문장을 만드세요.
 
             --- 예시 ---
@@ -100,7 +101,7 @@ class LlmAugmentation():
             response_text = response.text.strip()
 
             # 모델이 응답에 ```json ... ``` 같은 마크다운을 포함할 경우 대비
-            json_match = re.search(r'\[.*\]', response_text, re.DOTALL)
+            json_match = re.search(r'\[.*?\]', response_text, re.DOTALL)
             if json_match:
                 json_text = json_match.group()
                 paraphrased_sentences = json.loads(json_text)
@@ -121,46 +122,6 @@ class LlmAugmentation():
             return sentences  # 에러 발생 시 원본 문장 리스트 반환
 
 
-#
-# def apply_augmentation_to_reviews(df, text_column, batch_size, repeat=1):
-#     """
-#     특정 텍스트 컬럼을 repeat 배만큼 증강합니다.
-#     """
-#     llm_aug = LlmAugmentation()
-#     df_aug = df.copy()
-#
-#     original_texts = df[text_column].tolist()
-#     #augmented_texts = []
-#
-#     # for _ in range(repeat):  # 여러 번 증강
-#     #     for i in tqdm(range(0, len(original_texts), batch_size), desc=f"리뷰 증강 진행 중 (repeat={repeat})"):
-#     #         batch = original_texts[i:i + batch_size]
-#     #         paraphrased_batch = llm_aug.generate_paraphrased_sentence(batch)
-#     #         augmented_texts.extend(paraphrased_batch)
-#     #
-#     # df_aug[text_column] = augmented_texts
-#     # return df_aug
-#     # 'repeat' 횟수만큼 전체 데이터에 대한 증강을 반복 실행
-#
-#     all_augmented_texts = []
-#     for r_idx in range(repeat):
-#         current_run_texts = []
-#         for i in tqdm(range(0, len(original_texts), batch_size), desc=f"리뷰 증강 진행 중 (반복 {r_idx + 1}/{repeat})"):
-#             batch = original_texts[i:i + batch_size]
-#             paraphrased_batch = llm_aug.generate_paraphrased_sentence(batch)
-#             current_run_texts.extend(paraphrased_batch)
-#         all_augmented_texts.extend(current_run_texts)
-#
-#     # 1. 원본 데이터프레임을 'repeat' 횟수만큼 복제하여 길이를 맞춥니다.
-#     #    예: 100개 df를 repeat=2 하면 200개짜리 df가 됨
-#     df_repeated = pd.concat([df] * repeat, ignore_index=True)
-#
-#     # 2. 복제된 데이터프레임의 텍스트 컬럼을 증강된 텍스트로 교체합니다.
-#     #    이제 df_repeated(26200개)와 all_augmented_texts(26200개)의 길이가 일치합니다.
-#     df_repeated[text_column] = all_augmented_texts
-#
-#     return df_repeated
-
 def apply_augmentation_to_reviews(df, text_column, batch_size, repeat=1):
     llm_aug = LlmAugmentation()
 
@@ -176,7 +137,7 @@ def apply_augmentation_to_reviews(df, text_column, batch_size, repeat=1):
 
         # 2. ThreadPoolExecutor로 병렬 작업 실행
         # max_workers는 동시에 보낼 요청 수 (예: 10~50 사이에서 조절)
-        with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
             # 각 배치에 대한 작업을 executor에 제출(submit)
             future_to_index = {
@@ -215,39 +176,55 @@ def save_augmented_dataset(df, text_column, filename):
 
 
 if __name__ == "__main__":
-    original_train_df = pd.read_csv('../data file/train.csv')
-
+    original_train_df = pd.read_csv('../preprocessing/train_1010.csv')
+    value_counts = original_train_df['sentiment_label'].value_counts()
+    target_percentage = 0.7
+    max_count = value_counts.max()
+    target_count = int(max_count * target_percentage)
+    print(f"가장 많은 클래스 데이터 수: {max_count}개")
+    print(f"증강 목표 데이터 수 (최대치의 {target_percentage * 100}%): {target_count}개\n")
     # 증강할 라벨 선택
-    labels_to_augment = [0,2]
-    # 해당 라벨을 가진 데이터만 필터링
-    # df_to_augment = original_train_df[original_train_df['sentiment_label'].isin(labels_to_augment)].copy()
-    # print(f"\n라벨 {labels_to_augment}에 해당하는 데이터 {len(df_to_augment)}개를 증강합니다.")
-    # # 데이터 증강 실행 (리뷰 텍스트가 있는 컬럼 이름 지정)
-    # # API 비용이 발생할 수 있으니 주의하세요. 테스트 시에는 일부 데이터만 사용하세요.
-    # # 예: augmented_df = apply_augmentation_to_reviews(original_train_df.head(10), text_column='processed_review', batch_size=5)
-    # augmented_df = apply_augmentation_to_reviews(
-    #     df_to_augment,
-    #     text_column='processed_review',
-    #     batch_size=8  # 배치 크기는 API 정책에 맞춰 조절
-    # )
-    # # 기존 데이터와 증강된 데이터를 합침
-    # combined_df = pd.concat([original_train_df, augmented_df], ignore_index=True)
+    labels_to_augment = [0,1,2]
+    augmented_dfs = []
 
-    # 클래스 0은 2배 증강
-    df0 = original_train_df[original_train_df['sentiment_label'] == 0].copy()
-    aug0 = apply_augmentation_to_reviews(df0, text_column='processed_review', batch_size=32, repeat=1)
+    for label in labels_to_augment:
+        current_count = value_counts.get(label, 0)
 
-    # 클래스 2는 3배 증강
-    df2 = original_train_df[original_train_df['sentiment_label'] == 2].copy()
-    aug2 = apply_augmentation_to_reviews(df2, text_column='processed_review', batch_size=32, repeat=2)
+        # 목표치보다 적은 경우에만 증강 실행
+        if current_count < target_count:
+            num_to_generate = target_count - current_count
+            print(f"라벨 '{label}' 증강 시작: 현재 {current_count}개 -> 목표 {target_count}개 ({num_to_generate}개 생성 필요)")
 
-    # 합치기
-    combined_df = pd.concat([original_train_df, aug0, aug2], ignore_index=True)
+            # 해당 라벨의 데이터만 필터링
+            df_label = original_train_df[original_train_df['sentiment_label'] == label]
 
+            # 필요한 개수만큼 원본 데이터에서 랜덤 샘플링 (복원 추출 허용)
+            # num_to_generate가 df_label의 크기보다 클 수 있으므로 replace=True
+            df_to_augment_sample = df_label.sample(n=num_to_generate, replace=True, random_state=42)
 
-    # 저장 파일 이름과 방식을 CSV로 변경
+            # 샘플링된 데이터에 대해서만 증강 실행 (repeat=1)
+            augmented_sample_df = apply_augmentation_to_reviews(
+                df_to_augment_sample,
+                text_column='processed_review',
+                batch_size=8,  # 배치 크기는 API 정책에 맞춰 조절
+                repeat=1
+            )
+            augmented_dfs.append(augmented_sample_df)
+            print(f"라벨 '{label}'에 대한 신규 데이터 {len(augmented_sample_df)}개 생성 완료.\n")
+        else:
+            print(f"라벨 '{label}'은(는) 이미 목표치({target_count}개) 이상이므로 증강하지 않습니다.\n")
+
+        # 4. 원본 데이터와 증강된 데이터들을 모두 합침
+    all_dfs = [original_train_df] + augmented_dfs
+    combined_df = pd.concat(all_dfs, ignore_index=True)
+
+    print("\n--- 증강 후 전체 데이터 클래스 분포 ---")
+    print(combined_df['sentiment_label'].value_counts())
+    print("-" * 30)
+
+    # 5. 최종 데이터셋 저장
     save_augmented_dataset(
         combined_df,
         text_column='processed_review',
-        filename='train_create_API.csv'  # 원문과 많이 다른 문장을 생성
+        filename='../preprocessing/train_augmented_1010.csv'
     )
