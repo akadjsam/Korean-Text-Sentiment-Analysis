@@ -494,3 +494,18 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# Project data, trained weights, and generated evaluation artifacts.
+# Store publication datasets externally (for example, Zenodo) and document the
+# download location in README instead of committing them to Git.
+data/**
+!data/README.md
+data file/
+data augmentation code/*.csv
+preprocessing/*.csv
+preprocessing/csv파일 모음/
+artifacts/
+confusion_matrix_async.png
+journal_jics_27-3_1193404738.pdf
+.vscode/
+not_use/
+
