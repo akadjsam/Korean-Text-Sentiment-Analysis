@@ -41,7 +41,7 @@
 
 ## 실험 결과
 
-### 표 3. 데이터 정제 전후 비교
+### 데이터 정제 전후 비교
 
 | 클래스 | 평점 | 원본 데이터셋 (개수/비율) | 정제 데이터셋 (개수/비율) |
 | --- | ---: | ---: | ---: |
@@ -51,7 +51,7 @@
 | 매우 긍정 | 5 | 81,177 / 40.59% | 66,802 / 44.57% |
 | 합계 | - | 200,000 / 100% | 149,884 / 100.0% |
 
-### 표 4. Transformer 기반 모델별 성능 비교
+### Transformer 기반 모델별 성능 비교
 
 | 지표 | 원본 BERT | 원본 KcBERT | 원본 KcELECTRA | 정제 BERT | 정제 KcBERT | 정제 KcELECTRA |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -64,14 +64,13 @@
 | Weighted Avg. Recall | - | 0.70 | 0.71 | 0.82 | 0.82 | 0.84 |
 | Weighted Avg. F1-score | - | 0.67 | 0.69 | 0.81 | 0.82 | 0.83 |
 
-* 원본 데이터셋으로 학습한 BERT 결과는 선행 연구에서 인용한 값입니다.
 
 원본 BERT 결과는 논문에서 인용한 선행 연구 결과이며, 따라서 원본 BERT의 Weighted Average 지표는 제시되지 않았습니다. 정제 데이터셋에서는 KcELECTRA가 Accuracy 0.84, Macro F1-score 0.73, Weighted F1-score 0.83으로 가장 높은 성능을 기록했습니다.
 
 ## 저장소 구조
 
 ```text
-geminiAPI/
+Korean-Text-Sentiment-Analysis/
 ├── src/
 │   ├── prepare_dataset.py          # 정제, Gemini 필터링, 데이터 분할
 │   ├── filtering_guideline_ko.txt  # 점수별 필터링 기준
