@@ -4,6 +4,7 @@
 confusion_matrix_async.png
 preprocessing/stopwords.py
 *.txt
+!src/filtering_guideline_ko.txt
 preprocessing/merge csv file.py
 *.csv
 chromedriver-win64

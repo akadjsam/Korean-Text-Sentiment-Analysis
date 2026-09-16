@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
 
 <p align="center">
-  <img src="./Overall framework.png" alt="시각화 결과" width="600">
+  <img src="./Overall framework.png" alt="framework" width="600">
 </p>
 
 
@@ -152,7 +152,7 @@ python src/eval.py
 
 평가 결과는 `artifacts/ensemble_predictions_result.csv`에 저장되며, hold-out 데이터의 분류 보고서와 혼동 행렬을 출력합니다.
 
-## 한계
+## Limitations
 
 - 인접 점수(1점/2점, 4점/5점)는 표현이 유사해 구분이 어렵습니다.
 - 1점과 4점 클래스의 데이터 수가 상대적으로 적어 클래스 불균형이 남아 있습니다.
